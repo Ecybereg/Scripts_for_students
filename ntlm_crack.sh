@@ -12,7 +12,6 @@ NTLMCRACK() {
     mkdir -p $HOME/NTLM/hash
     cd $HOME/NTLM/hash
 
-    # Extract challenges from the pcap file
     tshark -r $HOME/$pcap -2 -R 'ntlmssp' -T fields -e ntlmssp.ntlmserverchallenge -e tcp.ack_raw \
     | awk NF | awk '{print $1"#"$2}' | awk -F'#' '{print $1"::"$2}' | awk 'length >= 16' \
     > "a.lst"
@@ -22,14 +21,12 @@ NTLMCRACK() {
             s=$(echo "$i" | awk -F:: '{print $2}')
             c=$(echo "$i" | awk -F:: '{print $1}')
             
-            # Extract relevant information based on challenge
             tshark -r $HOME/$pcap -2 -R "ntlmssp" -Y "tcp.seq_raw == $s" -T fields \
             -e ntlmssp.auth.username -e ntlmssp.auth.domain -e ntlmssp.ntlmv2_response.ntproofstr \
             -e ntlmssp.ntlmv2_response \
             | awk NF | awk '{print $1"#"$2"#"$3"#"$4"#"$5"#"$6}' | awk -F'#' '{print $1"::"$2":L:"$3":"$4":"$5":"$6}' \
             > "b$n.lst"
 
-            # Process the extracted data and generate results
             cat "b$n.lst" | sed 's/:L:/:'$c':/g' > "c$n.lst"
             r=$(cat "c$n.lst" | awk -F: '{print $5}')
             cat "c$n.lst" | sed -e 's/'$r'/L:/g' | sed 's/:L::L:/:L:/g' > "d$n.lst"
@@ -38,7 +35,6 @@ NTLMCRACK() {
             ((n++))
         done
 
-        # Combine challenge results into a single file
         rm *.lst
         for fcr in $(ls $HOME/NTLM/hash/crackme*.log); do
             if [ -s "$fcr" ]; then
@@ -50,5 +46,4 @@ NTLMCRACK() {
     fi
 }
 
-# Call the function
 NTLMCRACK
