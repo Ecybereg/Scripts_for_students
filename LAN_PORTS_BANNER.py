@@ -7,15 +7,12 @@ import socket
 from scapy.all import ARP, Ether, srp
 
 def scan_lan(target_ip):
-    # Create ARP request packet
     arp = ARP(pdst=target_ip)
-    ether = Ether(dst="ff:ff:ff:ff:ff:ff")  # Broadcast Ethernet frame
+    ether = Ether(dst="ff:ff:ff:ff:ff:ff")
     arp_request = ether/arp
     
-    # Send ARP request and receive responses
     result = srp(arp_request, timeout=3, verbose=False)[0]
     
-    # Extract live hosts from responses
     live_hosts = [received.psrc for sent, received in result]
     return live_hosts
 
@@ -25,7 +22,6 @@ def scan_ports(host, ports):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(1)
         
-        # Check if the port is open
         result = sock.connect_ex((host, port))
         if result == 0:
             open_ports.append(port)
@@ -35,12 +31,10 @@ def scan_ports(host, ports):
 def get_service_version(host, port):
     banner = ""
     try:
-        # Attempt to connect to the service
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
             s.settimeout(2)
             
-            # Receive service banner and decode
             banner = s.recv(1024).decode().strip()
     except Exception as e:
         pass
@@ -50,10 +44,9 @@ def main():
     target_ip = input("Enter the target IP range (e.g., 192.168.1.0/24): ")
     live_hosts = scan_lan(target_ip)
     
-    # Get ports to scan from user
     ports_option = input("Enter the ports to scan (e.g., 80, 443, 8080-8090, all): ")
     if ports_option == "all":
-        ports = range(1, 65536)  # All ports
+        ports = range(1, 65536)
     else:
         ports = []
         port_ranges = ports_option.split(",")
