@@ -51,11 +51,9 @@ def extract_unique_values(pcap_file):
             user_agent = str(packet[packet[TCP].payload].load).split('\n')[0]
             user_agents.add(user_agent)
     
-    # Create analyzer directory if it doesn't exist
     if not os.path.exists("analyzer"):
         os.makedirs("analyzer")
     
-    # Save unique values to text files
     save_to_file("analyzer/ipv4_addresses.txt", ipv4_addresses)
     save_to_file("analyzer/ipv6_addresses.txt", ipv6_addresses)
     save_to_file("analyzer/mac_addresses.txt", mac_addresses)
